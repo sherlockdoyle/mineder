@@ -1,103 +1,105 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState } from 'react';
+import ProfileCard from '@/components/ProfileCard';
+import { users as initialUsers } from '@/lib/users';
+import { Button } from '@/components/ui/button';
+import { SWIPE_LEFT_ENABLED, SWIPE_RIGHT_ENABLED, SWIPE_UP_ENABLED } from '@/config';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDrag } from '@use-gesture/react';
+import { X, Heart, Star } from 'lucide-react';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [users, setUsers] = useState(initialUsers);
+  const [swiped, setSwiped] = useState<number[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const removeUser = (index: number, dir: number) => {
+    setSwiped([...swiped, index]);
+  };
+
+  const swipe = (index: number, dir: number) => {
+    if (dir === 1 && SWIPE_RIGHT_ENABLED) {
+      removeUser(index, dir);
+    } else if (dir === -1 && SWIPE_LEFT_ENABLED) {
+      removeUser(index, dir);
+    } else if (dir === 0 && SWIPE_UP_ENABLED) {
+      removeUser(index, dir);
+    }
+  };
+
+  const bind = useDrag(({ args: [index], down, movement: [mx, my], direction: [xDir], velocity: [vx, vy] }) => {
+    const trigger = Math.max(vx, vy) > 0.2;
+    if (!down && trigger) {
+      const dir = xDir < 0 ? -1 : 1;
+      if (Math.abs(mx) > Math.abs(my)) {
+        swipe(index, dir);
+      } else {
+        swipe(index, 0);
+      }
+    }
+  });
+
+  const activeUsers = users.filter((_, i) => !swiped.includes(i));
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 p-4 overflow-hidden">
+      <div className="relative w-full max-w-sm h-[500px] md:max-w-md lg:max-w-lg">
+        <AnimatePresence>
+          {activeUsers.map((user, index) => (
+            <motion.div
+              key={index}
+              className="absolute w-full h-full"
+              style={{ zIndex: activeUsers.length - index }}
+              initial={{ scale: 1 - (activeUsers.length - 1 - index) * 0.1, y: (activeUsers.length - 1 - index) * -10 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ x: 500, opacity: 0, transition: { duration: 0.5 } }}
+              drag
+              {...bind(index)}
+              custom={index}
+            >
+              <ProfileCard user={user} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      <div className="flex space-x-4 mt-8">
+        {SWIPE_LEFT_ENABLED && (
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full h-20 w-20 bg-white shadow-lg"
+              onClick={() => swipe(activeUsers.length - 1, -1)}
+            >
+              <X className="h-10 w-10 text-red-500" />
+            </Button>
+          </motion.div>
+        )}
+        {SWIPE_UP_ENABLED && (
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full h-20 w-20 bg-white shadow-lg"
+              onClick={() => swipe(activeUsers.length - 1, 0)}
+            >
+              <Star className="h-10 w-10 text-yellow-500" />
+            </Button>
+          </motion.div>
+        )}
+        {SWIPE_RIGHT_ENABLED && (
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full h-20 w-20 bg-white shadow-lg"
+              onClick={() => swipe(activeUsers.length - 1, 1)}
+            >
+              <Heart className="h-10 w-10 text-green-500" />
+            </Button>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }
