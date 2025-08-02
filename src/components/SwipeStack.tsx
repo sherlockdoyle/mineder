@@ -49,7 +49,7 @@ const SwipeStack: FC = () => {
           animate={{ scale: 1, opacity: 1 }}
         >
           {isLoading ? (
-            <div className='text-xl text-white'>Loading...</div>
+            <div className='text-xl text-white'>Loading profiles...</div>
           ) : error ? (
             <p className='text-lg text-red-500'>{error}</p>
           ) : (
