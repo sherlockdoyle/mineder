@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "Experience love differently. Mineder is the dating app where every swipe is a yes - because every profile is your partner's.",
   authors: { name: 'Sherlock Doyle', url: 'https://github.com/sherlockdoyle' },
-  creator: 'Sherlock Doyle',
+  creator: 'Shekhar Dutta',
   publisher: 'Sherlock Doyle',
   metadataBase: new URL('https://mineder.vercel.app'),
   openGraph: {
